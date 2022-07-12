@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-type server struct {
+type Server struct {
 	routingpb.UnimplementedRoutingServiceServer
 }
 
-func (*server) GetAvailability(stream routingpb.RoutingService_GetAvailabilityServer) error {
+func (*Server) GetAvailability(stream routingpb.RoutingService_GetAvailabilityServer) error {
 	req, err := stream.Recv()
 	if err != nil {
 		log.Fatalf("error while stream.Recv(): %v", err.Error())
@@ -31,18 +31,24 @@ func (*server) GetAvailability(stream routingpb.RoutingService_GetAvailabilitySe
 
 	c := availabilitypb.NewAvailabilityServiceClient(cc)
 	strm, err := c.GetAvailability(context.Background(), &availabilityReq)
-	response := []routingpb.RoutingAvailabilityResponse{}
+	if err != nil {
+		log.Fatalf("error while c.GetAvailability: %v", err.Error())
+	}
+	response := []*routingpb.RoutingAvailabilityResponse{}
+	respAvailability := routingpb.ListRoutingAvailabilityResponse{}
 	for {
 		resp, err := strm.Recv()
 		if err != nil {
 			break
 		}
-		response = append(response, routingpb.RoutingAvailabilityResponse{
+		response = append(response, &routingpb.RoutingAvailabilityResponse{
 			CarType:  resp.GetCarType(),
 			Distance: resp.GetDistance(),
 			Location: resp.GetLocation(),
 		})
 	}
+	respAvailability.ListRoutingAvailabilityResponse = response
+	stream.Send(&respAvailability)
 
 	return nil
 }
