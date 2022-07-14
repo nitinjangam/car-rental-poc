@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/nitinjangam/car-rental-poc/definitions-store/availabilitypb"
-	"github.com/nitinjangam/car-rental-poc/definitions-store/routingpb"
+	"github.com/Dinesh789kumar12/CarApp/definitions-store/availabilitypb"
+	"github.com/Dinesh789kumar12/CarApp/definitions-store/routingpb"
 	"google.golang.org/grpc"
 )
 
@@ -34,6 +34,7 @@ func (*Server) GetAvailability(stream routingpb.RoutingService_GetAvailabilitySe
 	if err != nil {
 		log.Fatalf("error while c.GetAvailability: %v", err.Error())
 	}
+
 	response := []*routingpb.RoutingAvailabilityResponse{}
 	respAvailability := routingpb.ListRoutingAvailabilityResponse{}
 	for {
@@ -46,6 +47,7 @@ func (*Server) GetAvailability(stream routingpb.RoutingService_GetAvailabilitySe
 			Distance: resp.GetDistance(),
 			Location: resp.GetLocation(),
 		})
+		log.Printf("received:%v", resp)
 	}
 	respAvailability.ListRoutingAvailabilityResponse = response
 	stream.Send(&respAvailability)

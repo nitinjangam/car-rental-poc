@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package availabilitypb;
 
-option go_package="github.com/nitinjangam/car-rental-poc/definitions-store/availabilitypb";
+option go_package="github.com/Dinesh789kumar12/CarApp/definitions-store/availabilitypb";
 
 
 message AvailabilityRequest {
