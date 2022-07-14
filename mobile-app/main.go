@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nitinjangam/car-rental-poc/definitions-store/routingpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type userRequest struct {
@@ -26,11 +27,18 @@ type availabilityResponse struct {
 	Distance int    `json:"distance"`
 }
 
+type ratesRequest struct {
+	Source      string `json:"source"`
+	Destination string `json:"destination"`
+	Date        string `json:"date"`
+}
+
 func main() {
 	router := gin.Default()
 	rg := router.Group("api/v1/carapp")
 	{
 		rg.GET("/car", fetchAvailableCarNearby)
+		rg.GET("/rate", fetchRatesAvailableCars)
 	}
 
 	router.Run()
@@ -38,9 +46,6 @@ func main() {
 }
 
 func fetchAvailableCarNearby(c *gin.Context) {
-	myCounter := 1
-	myCounter++
-	log.Println(myCounter)
 
 	var usrLoc userRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&usrLoc); err != nil {
@@ -52,7 +57,7 @@ func fetchAvailableCarNearby(c *gin.Context) {
 			Longitude: int32(usrLoc.Location.Longitude),
 		},
 	}
-	cc, err := grpc.Dial("0.0.0.0:3000", grpc.WithInsecure())
+	cc, err := grpc.Dial("0.0.0.0:3000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Error while Dial: %v", err)
 	}
@@ -72,4 +77,39 @@ func fetchAvailableCarNearby(c *gin.Context) {
 		c.JSON(http.StatusOK, &resp)
 		break
 	}
+}
+
+func fetchRatesAvailableCars(c *gin.Context) {
+	var ratesReq ratesRequest
+	if err := json.NewDecoder(c.Request.Body).Decode(&ratesReq); err != nil {
+		log.Fatalf("error while json unmarshal: %v", err.Error())
+	}
+
+	//prepare rates ms request
+	reqRates := routingpb.RoutingRateRequest{
+		Source:      ratesReq.Source,
+		Destination: ratesReq.Destination,
+		Date:        ratesReq.Date,
+	}
+
+	cc, err := grpc.Dial("0.0.0.0:3000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Error while Dial: %v", err)
+	}
+	client := routingpb.NewRoutingServiceClient(cc)
+	strm, err := client.GetRate(context.Background(), &reqRates)
+	if err != nil {
+		log.Fatalf("Error while client.GetRate: %v", err)
+	}
+
+	resp := []*routingpb.RoutingRateResponse{}
+	for {
+		res, err := strm.Recv()
+		if err != nil {
+			break
+		}
+		resp = append(resp, res)
+	}
+	log.Printf("rates data received: %v", resp)
+	c.JSON(http.StatusOK, &resp)
 }

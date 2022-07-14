@@ -24,6 +24,20 @@ message Location {
     int32 longitude=2;
 }
 
+message RoutingRateRequest {
+    string source=1;
+    string destination=2;
+    string date=3;
+}
+
+message RoutingRateResponse {
+    string CarType=1;
+    string Location=2;
+    int32 Distance=3;
+    float price=4;
+}
+
 service RoutingService {
     rpc GetAvailability(stream RoutingAvailabilityRequest) returns (stream ListRoutingAvailabilityResponse) {};
+    rpc GetRate(RoutingRateRequest) returns (stream RoutingRateResponse) {};
 }

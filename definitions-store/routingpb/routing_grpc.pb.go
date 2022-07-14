@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RoutingServiceClient interface {
 	GetAvailability(ctx context.Context, opts ...grpc.CallOption) (RoutingService_GetAvailabilityClient, error)
+	GetRate(ctx context.Context, in *RoutingRateRequest, opts ...grpc.CallOption) (RoutingService_GetRateClient, error)
 }
 
 type routingServiceClient struct {
@@ -64,11 +65,44 @@ func (x *routingServiceGetAvailabilityClient) Recv() (*ListRoutingAvailabilityRe
 	return m, nil
 }
 
+func (c *routingServiceClient) GetRate(ctx context.Context, in *RoutingRateRequest, opts ...grpc.CallOption) (RoutingService_GetRateClient, error) {
+	stream, err := c.cc.NewStream(ctx, &RoutingService_ServiceDesc.Streams[1], "/routingpb.RoutingService/GetRate", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &routingServiceGetRateClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type RoutingService_GetRateClient interface {
+	Recv() (*RoutingRateResponse, error)
+	grpc.ClientStream
+}
+
+type routingServiceGetRateClient struct {
+	grpc.ClientStream
+}
+
+func (x *routingServiceGetRateClient) Recv() (*RoutingRateResponse, error) {
+	m := new(RoutingRateResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RoutingServiceServer is the server API for RoutingService service.
 // All implementations must embed UnimplementedRoutingServiceServer
 // for forward compatibility
 type RoutingServiceServer interface {
 	GetAvailability(RoutingService_GetAvailabilityServer) error
+	GetRate(*RoutingRateRequest, RoutingService_GetRateServer) error
 	mustEmbedUnimplementedRoutingServiceServer()
 }
 
@@ -78,6 +112,9 @@ type UnimplementedRoutingServiceServer struct {
 
 func (UnimplementedRoutingServiceServer) GetAvailability(RoutingService_GetAvailabilityServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAvailability not implemented")
+}
+func (UnimplementedRoutingServiceServer) GetRate(*RoutingRateRequest, RoutingService_GetRateServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetRate not implemented")
 }
 func (UnimplementedRoutingServiceServer) mustEmbedUnimplementedRoutingServiceServer() {}
 
@@ -118,6 +155,27 @@ func (x *routingServiceGetAvailabilityServer) Recv() (*RoutingAvailabilityReques
 	return m, nil
 }
 
+func _RoutingService_GetRate_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RoutingRateRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RoutingServiceServer).GetRate(m, &routingServiceGetRateServer{stream})
+}
+
+type RoutingService_GetRateServer interface {
+	Send(*RoutingRateResponse) error
+	grpc.ServerStream
+}
+
+type routingServiceGetRateServer struct {
+	grpc.ServerStream
+}
+
+func (x *routingServiceGetRateServer) Send(m *RoutingRateResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // RoutingService_ServiceDesc is the grpc.ServiceDesc for RoutingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -131,6 +189,11 @@ var RoutingService_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _RoutingService_GetAvailability_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetRate",
+			Handler:       _RoutingService_GetRate_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "routing.proto",
