@@ -3,7 +3,6 @@ module github.com/nitinjangam/car-rental-poc
 go 1.17
 
 require (
-	github.com/Dinesh789kumar12/CarApp v0.0.0-20220714110431-c8a89da0088a
 	github.com/gin-gonic/gin v1.8.1
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0

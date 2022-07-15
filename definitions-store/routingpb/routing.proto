@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package routingpb;
 
-option go_package="github.com/Dinesh789kumar12/CarApp/definitions-store/routingpb";
+option go_package="github.com/nitinjangam/car-rental-poc/definitions-store/routingpb";
 
 
 message RoutingAvailabilityRequest {

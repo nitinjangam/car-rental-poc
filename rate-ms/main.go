@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/Dinesh789kumar12/CarApp/definitions-store/ratepb"
-	"github.com/Dinesh789kumar12/CarApp/rate-ms/rateserver"
+	"github.com/nitinjangam/car-rental-poc/definitions-store/ratepb"
+	"github.com/nitinjangam/car-rental-poc/rate-ms/rateserver"
 	"google.golang.org/grpc"
 )
 

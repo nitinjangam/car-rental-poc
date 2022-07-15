@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ratepb;
 
-option go_package="github.com/Dinesh789kumar12/CarApp/definitions-store/ratepb";
+option go_package="github.com/nitinjangam/car-rental-poc/definitions-store/ratepb";
 
 
 message RateRequest {
